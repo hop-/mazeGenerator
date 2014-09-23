@@ -33,27 +33,56 @@ Pointer Pointer::getNextInDirection(Direction d)
 	return p;
 }
 
-bool Pointer::isCorrect()
+bool Pointer::isCorrect(int mx, int my)
 {
-	return (x >= 0 && x < MX && y >= 0 && y < MY);
+	return (x >= 0 && x < mx && y >= 0 && y < my);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
 BaseMaze::BaseMaze() :
-	outFileName((char*)"maze.txt")
+	m_outFileName((char*)"maze.txt"),
+	m_x(MX),
+	m_y(MY)
 {
-	reset();
+	initBoard();
 	srand(time(NULL));
+}
+
+BaseMaze::~BaseMaze()
+{
+	deleteBoard();
+}
+
+bool** BaseMaze::get()
+{
+	return m_maze;
 }
 
 void BaseMaze::reset()
 {
-	for (int x = 0; x < MX; ++x){
-		for (int y = 0; y < MY; ++y){
+	for (int x = 0; x < m_x; ++x){
+		for (int y = 0; y < m_y; ++y){
 			m_maze[x][y] = true;
 		}
 	}
+}
+
+void BaseMaze::initBoard()
+{
+	m_maze = new bool*[m_x];
+	for (int i = 0; i < m_x; ++i) {
+		m_maze[i] = new bool[m_y];
+	}
+	reset();
+}
+
+void BaseMaze::deleteBoard()
+{
+	for (int i = 0; i < m_x; ++i) {
+		delete [] m_maze[i];
+	}
+	delete [] m_maze;
 }
 
 Pointer BaseMaze::getStart()
@@ -66,18 +95,26 @@ Pointer BaseMaze::getEnd()
 	return m_end;
 }
 
-bool BaseMaze::dumpMazeFile()
+void BaseMaze::resize(int x, int y){
+	deleteBoard();
+	m_x = x;
+	m_y = y;
+	initBoard();
+}
+
+bool BaseMaze::dumpFile()
 {
-	outFile.open(outFileName);
+	std::ofstream outFile;
+	outFile.open(m_outFileName);
 	if (outFile.is_open()) {
 		Pointer p;
-		for (int i = 0; i < MX + 2; ++i) {
+		for (int i = 0; i < m_x + 2; ++i) {
 			outFile << MWALL;
 		}
 		outFile << "\n" << MWALL;
-		for (p.y = MY - 1; p.y >= 0; --p.y) {
-			for (p.x = 0; p.x < MX; ++p.x) {
-				if (maze(p) && p.isCorrect()) {
+		for (p.y = m_y - 1; p.y >= 0; --p.y) {
+			for (p.x = 0; p.x < m_x; ++p.x) {
+				if (maze(p) && p.isCorrect(m_x, m_y)) {
 					outFile << MWALL;
 				} else if (p == m_start) {
 					outFile << MSTART;
@@ -89,7 +126,7 @@ bool BaseMaze::dumpMazeFile()
 			}
 			outFile << MWALL << "\n" << MWALL;
 		}
-		for (int i = 0; i < MX + 1; ++i) {
+		for (int i = 0; i < m_x + 1; ++i) {
 			outFile << MWALL;
 		}
 		outFile.close();
@@ -99,9 +136,9 @@ bool BaseMaze::dumpMazeFile()
 	}
 }
 
-bool BaseMaze::dumpMazeFile(char* fileName){
-	outFileName = fileName;
-	return dumpMazeFile();
+bool BaseMaze::dumpFile(char* fileName){
+	m_outFileName = fileName;
+	return dumpFile();
 }
 
 void BaseMaze::create()
@@ -116,19 +153,19 @@ void BaseMaze::setStartPointer()
 	switch (dir){
 		case 0:
 			m_start.x = 0;
-			m_start.y = double(rand() % MY/2)*2;
+			m_start.y = double(rand() % m_y/2)*2;
 		break;
 		case 1:
-			m_start.x = double(rand() % MX/2)*2;
+			m_start.x = double(rand() % m_x/2)*2;
 			m_start.y = 0;
 		break;
 		case 2:
-			m_start.x = MX - 1;
-			m_start.y = double(rand() % MY/2)*2;
+			m_start.x = m_x - 1;
+			m_start.y = double(rand() % m_y/2)*2;
 		break;
 		case 3:
-			m_start.x = double(rand() % MX/2)*2;
-			m_start.y = MY - 1;
+			m_start.x = double(rand() % m_x/2)*2;
+			m_start.y = m_y - 1;
 	}
 	//std::cout << m_start.x << " " << m_start.y << std::endl; // test //
 }
@@ -138,7 +175,7 @@ void BaseMaze::setStartPointer()
 bool DepthFirstMaze::getStatForPropagation(Direction d)
 {
 	return ((
-		 m_current.getNextInDirection(d).getNextInDirection(d).isCorrect()
+		 m_current.getNextInDirection(d).getNextInDirection(d).isCorrect(m_x, m_y)
 		 && maze(m_current.getNextInDirection(d).getNextInDirection(d))
 		));
 }
@@ -188,8 +225,8 @@ void DepthFirstMaze::make()
 		if(maxLength < m_path.size() 
 		   && (
 		       m_path.back().x == 0
-		       || m_path.back().x == MX - 1
-		       || m_path.back().y == MY - 1
+		       || m_path.back().x == m_x - 1
+		       || m_path.back().y == m_y - 1
 		       || m_path.back().y == 0
 		      )){
 			m_end = m_path.back();

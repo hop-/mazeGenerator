@@ -3,7 +3,8 @@
 int main()
 {
 	DepthFirstMaze maze;
+	maze.resize(29, 29);
 	maze.create();
-	maze.dumpMazeFile();
+	maze.dumpFile();
 	return 0;
 }

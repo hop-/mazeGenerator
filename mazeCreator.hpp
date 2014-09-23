@@ -37,29 +37,35 @@ struct Pointer
 public:
 	bool operator==(const Pointer& right);
 	bool operator!=(const Pointer& right);
-	bool isCorrect();
+	bool isCorrect(int mx, int my);
 	Pointer getNextInDirection(Direction d);
 };
 
 class BaseMaze
 {
 protected:
+	int m_x;
+	int m_y;
 	Pointer m_start;
 	Pointer m_end;
-	bool m_maze[MX][MY];
-	std::ofstream outFile;
-	char* outFileName;
+	bool** m_maze;
+	char* m_outFileName;
 public:
 	BaseMaze();
+	~BaseMaze();
+	bool** get();
 	void reset();
 	Pointer getStart();
 	Pointer getEnd();
-	bool dumpMazeFile();
-	bool dumpMazeFile(char* fileName);
+	void resize(int x, int y);
+	bool dumpFile();
+	bool dumpFile(char* fileName);
 	virtual void create();
 protected:
 	virtual void setStartPointer();
 	virtual void make() = 0;
+	void initBoard();
+	void deleteBoard();
 };
 
 class DepthFirstMaze
