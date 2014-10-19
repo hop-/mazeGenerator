@@ -28,6 +28,7 @@ Pointer Pointer::getNextInDirection(Direction d)
 		break;
 		case D_DOWN:
 			p.y--;
+		default:
 		break;
 	}
 	return p;
@@ -41,7 +42,6 @@ bool Pointer::isCorrect(int mx, int my)
 //////////////////////////////////////////////////////////////////////////////////
 
 BaseMaze::BaseMaze() :
-	m_outFileName((char*)"maze.txt"),
 	m_x(MX),
 	m_y(MY)
 {
@@ -57,6 +57,11 @@ BaseMaze::~BaseMaze()
 bool** BaseMaze::get()
 {
 	return m_maze;
+}
+
+bool BaseMaze::get(Pointer p)
+{
+	return maze(p);
 }
 
 void BaseMaze::reset()
@@ -102,10 +107,10 @@ void BaseMaze::resize(int x, int y){
 	initBoard();
 }
 
-bool BaseMaze::dumpFile()
+bool BaseMaze::dumpFile(char* fileName)
 {
 	std::ofstream outFile;
-	outFile.open(m_outFileName);
+	outFile.open(fileName);
 	if (outFile.is_open()) {
 		Pointer p;
 		for (int i = 0; i < m_x + 2; ++i) {
@@ -136,9 +141,8 @@ bool BaseMaze::dumpFile()
 	}
 }
 
-bool BaseMaze::dumpFile(char* fileName){
-	m_outFileName = fileName;
-	return dumpFile();
+bool BaseMaze::dumpFile(){
+	return dumpFile((char*)"maze.txt");
 }
 
 void BaseMaze::create()
@@ -172,7 +176,7 @@ void BaseMaze::setStartPointer()
 
 /////////////////////////////////////////////////////////////////////////////////
 
-bool DepthFirstMaze::getStatForPropagation(Direction d)
+bool DFSMaze::getStatForPropagation(Direction d)
 {
 	return ((
 		 m_current.getNextInDirection(d).getNextInDirection(d).isCorrect(m_x, m_y)
@@ -180,7 +184,7 @@ bool DepthFirstMaze::getStatForPropagation(Direction d)
 		));
 }
 
-Direction DepthFirstMaze::randomDirection()
+Direction DFSMaze::randomDirection()
 {
 	std::vector<Direction> existDirs;
 	if (getStatForPropagation(D_LEFT)) {
@@ -202,7 +206,7 @@ Direction DepthFirstMaze::randomDirection()
 	}
 }
 
-void DepthFirstMaze::make()
+void DFSMaze::make()
 {
 	setStartPointer();
 	Direction d;
@@ -222,7 +226,7 @@ void DepthFirstMaze::make()
 			m_current = m_path.back();
 			m_path.pop_back();
 		}
-		if(maxLength < m_path.size() 
+		if(maxLength < static_cast<int>(m_path.size()) 
 		   && (
 		       m_path.back().x == 0
 		       || m_path.back().x == m_x - 1

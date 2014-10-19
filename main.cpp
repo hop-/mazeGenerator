@@ -2,7 +2,7 @@
 
 int main()
 {
-	DepthFirstMaze maze;
+	DFSMaze maze;
 	maze.resize(29, 29);
 	maze.create();
 	maze.dumpFile();

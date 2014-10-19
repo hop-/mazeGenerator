@@ -49,11 +49,11 @@ protected:
 	Pointer m_start;
 	Pointer m_end;
 	bool** m_maze;
-	char* m_outFileName;
 public:
 	BaseMaze();
 	~BaseMaze();
 	bool** get();
+	bool get(Pointer p);
 	void reset();
 	Pointer getStart();
 	Pointer getEnd();
@@ -68,7 +68,7 @@ protected:
 	void deleteBoard();
 };
 
-class DepthFirstMaze
+class DFSMaze
 	: public BaseMaze
 {
 	Pointer m_current;
