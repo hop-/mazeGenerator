@@ -1,4 +1,4 @@
 mazeGenerator
 =============
 
-Algorithm(s) for maze creation
+Algorithm(s) for maze generation
